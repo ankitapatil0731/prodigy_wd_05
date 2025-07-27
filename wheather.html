@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherPro - Location-Based Weather</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #3955d2 0%, #5e328a 100%);
+            min-height: 100vh;
+            color: #a5cd88;
+            transition: all 0.5s ease;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #7a4da7;
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background-color: #240940;
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            margin-top: 80px;
+            padding: 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 40px 0;
+            color: rgb(41, 46, 114);
+        }
+
+        .hero h1 {
+            color: #240940;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+        }
+
+        .location-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .location-btn {
+            background: #1173d4;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .location-btn:hover, .location-btn.active {
+            background: rgba(32, 30, 130, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .weather-card {
+            background-color: #7a4da7 ;
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 20px 0;
+            text-align: center;
+            color: white;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .city-name {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+
+        .weather-main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .weather-icon {
+            font-size: 5em;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .temperature {
+            font-size: 4em;
+            font-weight: 300;
+        }
+
+        .description {
+            font-size: 1.3em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .detail-item {
+            background: rgba(220, 209, 209, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .detail-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .forecast-section {
+            margin-top: 40px;
+        }
+
+        .forecast-title {
+            font-size: 2em;
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .forecast-card {
+            background: #1173d4;
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .forecast-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .forecast-day {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .forecast-icon {
+            font-size: 2.5em;
+            margin: 15px 0;
+        }
+
+        .forecast-temps {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .temp-high {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .temp-low {
+            font-size: 1.1em;
+            opacity: 0.8;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .chart-title {
+            font-size: 1.5em;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .bg-sunny { background: linear-gradient(135deg, #493ba5db 0%, #052153 100%); }
+        .bg-cloudy { background: linear-gradient(135deg, #3a9faf 0%, #761a62 100%); }
+        .bg-rainy { background: linear-gradient(135deg, #47b791 0%, #799f0c 100%); }
+        .bg-snowy { background: linear-gradient(135deg, #631359 0%, #bd677b 100%); }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2em;
+            }
+            
+            .weather-main {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .temperature {
+                font-size: 3em;
+            }
+            
+            .location-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🌤 WeatherPro</div>
+            <ul class="nav-links">
+                <li><a href="#" class="nav-link active">Weather</a></li>
+                <li><a href="#" class="nav-link">Forecast</a></li>
+                <li><a href="#" class="nav-link">Charts</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="hero">
+            <h1>Global Weather Information</h1>
+            <h2>Select a location to view detailed weather information</h2>
+            
+        </div>
+
+        <div class="location-selector">
+            <button class="location-btn active" data-city="pune">📍 Pune, India</button>
+            <button class="location-btn" data-city="mumbai">🏙 Mumbai, India</button>
+            <button class="location-btn" data-city="delhi">🏛 Delhi, India</button>
+            <button class="location-btn" data-city="bangalore">🌆 Bangalore, India</button>
+            <button class="location-btn" data-city="london">🇬🇧 London, UK</button>
+            <button class="location-btn" data-city="newyork">🗽 New York, USA</button>
+            <button class="location-btn" data-city="tokyo">🗾 Tokyo, Japan</button>
+            <button class="location-btn" data-city="paris">🇫🇷 Paris, France</button>
+        </div>
+
+        <div id="weatherDisplay" class="weather-card">
+            <!-- Weather data will be displayed here -->
+        </div>
+
+        <div class="forecast-section">
+            <h2 class="forecast-title">7-Day Forecast</h2>
+            <div id="forecastDisplay" class="forecast-grid">
+                <!-- Forecast cards will be displayed here -->
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3 class="chart-title">Temperature Trend (Next 7 Days)</h3>
+            <canvas id="temperatureChart"></canvas>
+        </div>
+    </main>
+
+    <script>
+        // Demo weather data for different cities
+        const weatherData = {
+            pune: {
+                city: "Pune, Maharashtra",
+                country: "India",
+                temperature: 28,
+                description: "Partly Cloudy",
+                icon: "⛅",
+                humidity: 65,
+                windSpeed: 12,
+                pressure: 1013,
+                visibility: 8,
+                uvIndex: 6,
+                feelsLike: 31,
+                sunrise: "06:15",
+                sunset: "18:45",
+                background: "bg-cloudy"
+            },
+            mumbai: {
+                city: "Mumbai, Maharashtra",
+                country: "India",
+                temperature: 32,
+                description: "Humid and Cloudy",
+                icon: "☁",
+                humidity: 78,
+                windSpeed: 15,
+                pressure: 1010,
+                visibility: 6,
+                uvIndex: 8,
+                feelsLike: 36,
+                sunrise: "06:20",
+                sunset: "18:50",
+                background: "bg-cloudy"
+            },
+            delhi: {
+                city: "New Delhi",
+                country: "India",
+                temperature: 35,
+                description: "Hot and Sunny",
+                icon: "☀",
+                humidity: 45,
+                windSpeed: 8,
+                pressure: 1015,
+                visibility: 10,
+                uvIndex: 9,
+                feelsLike: 38,
+                sunrise: "05:45",
+                sunset: "19:15",
+                background: "bg-sunny"
+            },
+            bangalore: {
+                city: "Bangalore, Karnataka",
+                country: "India",
+                temperature: 25,
+                description: "Pleasant and Cloudy",
+                icon: "🌤",
+                humidity: 60,
+                windSpeed: 10,
+                pressure: 1012,
+                visibility: 9,
+                uvIndex: 5,
+                feelsLike: 27,
+                sunrise: "06:10",
+                sunset: "18:40",
+                background: "bg-cloudy"
+            },
+            london: {
+                city: "London",
+                country: "United Kingdom",
+                temperature: 18,
+                description: "Light Rain",
+                icon: "🌧",
+                humidity: 85,
+                windSpeed: 18,
+                pressure: 1008,
+                visibility: 5,
+                uvIndex: 2,
+                feelsLike: 16,
+                sunrise: "05:30",
+                sunset: "20:45",
+                background: "bg-rainy"
+            },
+            newyork: {
+                city: "New York",
+                country: "United States",
+                temperature: 22,
+                description: "Clear Sky",
+                icon: "☀",
+                humidity: 55,
+                windSpeed: 14,
+                pressure: 1020,
+                visibility: 15,
+                uvIndex: 7,
+                feelsLike: 24,
+                sunrise: "05:50",
+                sunset: "19:30",
+                background: "bg-sunny"
+            },
+            tokyo: {
+                city: "Tokyo",
+                country: "Japan",
+                temperature: 26,
+                description: "Partly Cloudy",
+                icon: "⛅",
+                humidity: 70,
+                windSpeed: 11,
+                pressure: 1016,
+                visibility: 12,
+                uvIndex: 6,
+                feelsLike: 29,
+                sunrise: "04:45",
+                sunset: "18:55",
+                background: "bg-cloudy"
+            },
+            paris: {
+                city: "Paris",
+                country: "France",
+                temperature: 20,
+                description: "Overcast",
+                icon: "☁",
+                humidity: 75,
+                windSpeed: 16,
+                pressure: 1011,
+                visibility: 8,
+                uvIndex: 3,
+                feelsLike: 18,
+                sunrise: "06:00",
+                sunset: "20:30",
+                background: "bg-cloudy"
+            }
+        };
+
+        // Generate 7-day forecast data
+        function generateForecast(baseTemp) {
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const icons = ['☀', '⛅', '☁', '🌧', '🌦', '🌤', '☀'];
+            const forecast = [];
+            
+            for (let i = 0; i < 7; i++) {
+                const tempVariation = Math.random() * 10 - 5;
+                forecast.push({
+                    day: days[i],
+                    icon: icons[i],
+                    high: Math.round(baseTemp + tempVariation + 3),
+                    low: Math.round(baseTemp + tempVariation - 3)
+                });
+            }
+            return forecast;
+        }
+
+        // Display weather for selected city
+        function displayWeather(cityKey) {
+            const data = weatherData[cityKey];
+            const weatherDisplay = document.getElementById('weatherDisplay');
+            const forecastDisplay = document.getElementById('forecastDisplay');
+            
+            // Update body background
+            document.body.className = data.background;
+            
+            // Display current weather
+            weatherDisplay.innerHTML = `
+                <div class="city-name">${data.city}</div>
+                <div class="weather-main">
+                    <div class="weather-icon">${data.icon}</div>
+                    <div class="temperature">${data.temperature}°C</div>
+                </div>
+                <div class="description">${data.description}</div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Feels Like</div>
+                        <div class="detail-value">${data.feelsLike}°C</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Humidity</div>
+                        <div class="detail-value">${data.humidity}%</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Wind Speed</div>
+                        <div class="detail-value">${data.windSpeed} km/h</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Pressure</div>
+                        <div class="detail-value">${data.pressure} hPa</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Visibility</div>
+                        <div class="detail-value">${data.visibility} km</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">UV Index</div>
+                        <div class="detail-value">${data.uvIndex}</div>
+                    </div>
+                </div>
+            `;
+            
+            // Generate and display forecast
+            const forecast = generateForecast(data.temperature);
+            forecastDisplay.innerHTML = '';
+            forecast.forEach(day => {
+                const card = document.createElement('div');
+                card.className = 'forecast-card';
+                card.innerHTML = `
+                    <div class="forecast-day">${day.day}</div>
+                    <div class="forecast-icon">${day.icon}</div>
+                    <div class="forecast-temps">
+                        <div class="temp-high">${day.high}°</div>
+                        <div class="temp-low">${day.low}°</div>
+                    </div>
+                `;
+                forecastDisplay.appendChild(card);
+            });
+            
+            // Update chart
+            updateChart(forecast);
+        }
+
+        // Update temperature chart
+        let temperatureChart;
+        function updateChart(forecast) {
+            const ctx = document.getElementById('temperatureChart').getContext('2d');
+            
+            if (temperatureChart) {
+                temperatureChart.destroy();
+            }
+            
+            temperatureChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: forecast.map(f => f.day),
+                    datasets: [{
+                        label: 'High Temperature',
+                        data: forecast.map(f => f.high),
+                        borderColor: '#f7971e',
+                        backgroundColor: 'rgba(247, 151, 30, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Low Temperature',
+                        data: forecast.map(f => f.low),
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Handle location button clicks
+        document.querySelectorAll('.location-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons
+                document.querySelectorAll('.location-btn').forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                btn.classList.add('active');
+                // Display weather for selected city
+                displayWeather(btn.dataset.city);
+            });
+        });
+
+        // Initialize with Pune weather
+        displayWeather('pune');
+    </script>
+</body>
+</html>
